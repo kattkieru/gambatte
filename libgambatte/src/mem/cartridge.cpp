@@ -20,6 +20,7 @@
 #include "file/file.h"
 #include "../savestate.h"
 #include "pakinfo_internal.h"
+#include <algorithm>  // for min / max
 #include <cstring>
 #include <fstream>
 

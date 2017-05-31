@@ -3,8 +3,7 @@ project(gbdk3-gambatte)
 
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../sdl ${CMAKE_CURRENT_BINARY_DIR}/extern )
 
-set_target_properties( sdl PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32" )
-set_target_properties( sdlmain PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32" )
+add_definitions( -DHAVE_STDINT_H )
 
 file( 
 	GLOB LIBGAMBATTE_SOURCES
@@ -25,16 +24,18 @@ file(
 )
 
 if (WIN32)
+#	message( FATAL_ERROR "Not yet supported." )
+	add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_WINDOWS -D_WIN32_WINNT=0x0400 )
+	set( PLATFORM_LIBRARIES opengl32.lib winmm.lib dxguid.lib )
 	message( AUTHOR_WARNING "+ Building for Windows." )
-	message( FATAL_ERROR "Not yet supported." )
-
-	add_definitions( -D_CRT_SECURE_NO_WARNINGS )
-	set( PLATFORM_LIBRARIES "opengl32.lib winmm.lib dxguid.lib" )
+	set( MACHINE_FLAG "/MACHINE:x86" )
 
 elseif( UNIX AND APPLE )
+	set( MACHINE_FLAG "-m32" )
+
 	set( CFLAGS "-Wall -Wextra -O2 -g -fomit-frame-pointer -fPIC" )
 	set( CXXFLAGS "${CFLAGS} -fno-exceptions -fno-rtti" )
-	add_definitions( -D_GNU_SOURCE=1 -D_THREAD_SAFE -DHAVE_STDINT_H )
+	add_definitions( -D_GNU_SOURCE=1 -D_THREAD_SAFE )
 	set( PLATFORM_LIBRARIES "-Wl,-framework,OpenGL -Wl,-framework,Cocoa -Wl,-framework,ApplicationServices -Wl,-framework,Carbon -Wl,-framework,AudioToolbox -Wl,-framework,AudioUnit -Wl,-framework,IOKit" )
 	message( AUTHOR_WARNING "+ Building for macOS." )
 else()
@@ -43,10 +44,10 @@ endif()
 
 add_library( libgambatte ${LIBGAMBATTE_SOURCES} )
 target_include_directories( libgambatte PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common ${CMAKE_CURRENT_SOURCE_DIR}/libgambatte/src ${CMAKE_CURRENT_SOURCE_DIR}/libgambatte/include )
-set_target_properties(libgambatte PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+set_target_properties(libgambatte PROPERTIES COMPILE_FLAGS ${MACHINE_FLAG} LINK_FLAGS ${MACHINE_FLAG})
 
 
 add_executable( gambatte ${GAMBATTE_SOURCES} )
 target_link_libraries( gambatte PUBLIC libgambatte sdl sdlmain ${PLATFORM_LIBRARIES} )
-set_target_properties( gambatte PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32" )
+set_target_properties( gambatte PROPERTIES COMPILE_FLAGS ${MACHINE_FLAG} LINK_FLAGS ${MACHINE_FLAG} )
 
